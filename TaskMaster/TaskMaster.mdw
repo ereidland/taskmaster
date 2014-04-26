@@ -1,6 +1,5 @@
 <WorkspaceItem ctype="Workspace">
   <Items>
     <Item>TaskMaster.sln</Item>
-    <Item>TaskMasterConsole/TaskMasterConsole.sln</Item>
   </Items>
 </WorkspaceItem>
