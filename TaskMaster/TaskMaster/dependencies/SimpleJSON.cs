@@ -1,4 +1,4 @@
-#define USE_SharpZipLib
+//#define USE_SharpZipLib
 
 /* * * * *
  * A simple JSON Parser / builder
