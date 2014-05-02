@@ -1,5 +1,5 @@
 //
-// TCPClient.cs
+// GenericEvents.cs
 //
 // Author:
 //       Evan Reidland <er@evanreidland.com>
@@ -24,15 +24,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
-
-namespace TaskMaster
+public class ObjectChangedEvent<T>
 {
-    public class TCPClient
+    public T OldValue { get; private set; }
+    public T NewValue { get; private set; }
+
+    public ObjectChangedEvent(T oldValue, T newValue)
     {
-        public TCPClient ()
-        {
-        }
+        OldValue = oldValue;
+        NewValue = newValue;
     }
 }
-

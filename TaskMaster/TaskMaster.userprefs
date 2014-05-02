@@ -1,16 +1,10 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="TaskMaster/Source/ActionQueue.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="TaskMaster/Source/Network/Shared.cs">
     <Files>
-      <File FileName="../../../Downloads/ndesk-options-0.2.1/src/NDesk.Options/NDesk.Options/Options.cs" Line="1" Column="1" />
-      <File FileName="TaskMaster/dependencies/SimpleJSON.cs" Line="1" Column="1" />
-      <File FileName="TaskMasterConsole/Properties/AssemblyInfo.cs" Line="1" Column="1" />
-      <File FileName="TaskMaster/Properties/AssemblyInfo.cs" Line="1" Column="1" />
-      <File FileName="TaskMaster/Source/ActionQueue.cs" Line="87" Column="55" />
-      <File FileName="TaskMaster/Source/Log.cs" Line="1" Column="1" />
-      <File FileName="TaskMaster/Source/TCPClient.cs" Line="1" Column="1" />
-      <File FileName="TaskMaster/Source/TCPServer.cs" Line="1" Column="1" />
-      <File FileName="TaskMaster/Source/EventHub.cs" Line="1" Column="1" />
+      <File FileName="TaskMaster/Source/Network/Shared.cs" Line="4" Column="11" />
+      <File FileName="TaskMaster/Source/Network/Client.cs" Line="36" Column="9" />
+      <File FileName="TaskMaster/Source/Network/Server.cs" Line="67" Column="47" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

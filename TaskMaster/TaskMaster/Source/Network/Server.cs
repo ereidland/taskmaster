@@ -1,5 +1,5 @@
 //
-// TCPServer.cs
+// Server.cs
 //
 // Author:
 //       Evan Reidland <er@evanreidland.com>
@@ -23,16 +23,52 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 using System;
 
-namespace TaskMaster
+namespace TaskMaster.Network
 {
-    public class TCPServer
+    public enum ServerConnectionState
     {
-        public TCPServer ()
-        {
+        Disconnected,
+        Listening,
+    }
 
+    public class Server
+    {
+        public abstract class ServerClient
+        {
+            public Guid ID { get; private set; }
+            public abstract void Send(byte[] data);
+        }
+
+        private ActionQueue _actions = new ActionQueue();
+        protected ActionQueue Actions { get { return _actions; } }
+
+        public EventHub Events { get; private set; }
+
+        private ServerConnectionState _connectionState = ServerConnectionState.Disconnected;
+
+        public ServerConnectionState State
+        {
+            get { return _connectionState; }
+            set
+            {
+                if (_connectionState != value)
+                {
+                    var eventObject = new ObjectChangedEvent<ServerConnectionState>(_connectionState, value);
+                    _connectionState = value;
+                    Events.SendQueued(Actions, eventObject);
+                }
+            }
+        }
+
+        public short Port { get; protected set; }
+
+        public abstract void Listen(int port);
+
+        public Server(EventHub hub)
+        {
+            Events = hub;
         }
     }
 }
