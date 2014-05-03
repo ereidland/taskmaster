@@ -46,6 +46,18 @@ namespace TaskMaster.Network
         }
     }
 
+    public class ClientDisconnectedEvent
+    {
+        public Server Owner { get; private set; }
+        public Guid ClientID { get; private set; }
+
+        public ClientDisconnectedEvent(Server owner, Guid clientID)
+        {
+            Owner = owner;
+            ClientID = clientID;
+        }
+    }
+
     public abstract class Server
     {
         public abstract class ServerClient
@@ -101,7 +113,14 @@ namespace TaskMaster.Network
             _clients[client.ID] = client;
         }
 
-        protected void RemoveClient(Guid id) { _clients.Remove(id); }
+        protected void RemoveClient(Guid id)
+        {
+            if (_clients.ContainsKey(id))
+            {
+                _clients.Remove(id);
+                Events.SendQueued(Actions, new ClientDisconnectedEvent(this, id));
+            }
+        }
 
         protected ServerClient GetClient(Guid id)
         {

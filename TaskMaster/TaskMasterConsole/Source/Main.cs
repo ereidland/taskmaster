@@ -92,6 +92,11 @@ namespace TaskMasterConsole
                 e.Owner.Send(e.ClientID, "Welcome!", null);
             });
 
+            subscriber.AddReceiver<ClientDisconnectedEvent>(hub, (e) =>
+            {
+                Console.WriteLine("Client disconnected: " + e.ClientID);
+            });
+
             subscriber.AddReceiver<ObjectChangedEvent<ServerConnectionState>>(hub, (e) =>
             {
                 Console.WriteLine("{0} -> {1}", e.OldValue, e.NewValue);

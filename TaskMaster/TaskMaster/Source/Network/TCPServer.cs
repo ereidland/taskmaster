@@ -52,12 +52,9 @@ namespace TaskMaster.Network
             {
                 bool runninng = true;
 
-                while (runninng && _client != null)
+                while (runninng)
                 {
-                    TcpClient client;
-
-                    lock (_client)
-                        client = _client;
+                    TcpClient client = _client;
 
                     if (client != null && client.Connected)
                     {
@@ -81,9 +78,8 @@ namespace TaskMaster.Network
 
                             Thread.Sleep(SLEEP_INTERVAL);
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            Log.Default.Exception(e);
                             Log.Default.Error("Encountered exception during SendLoop on client {0}. Dropping client.", ID);
                             Stop();
                         }
@@ -102,26 +98,17 @@ namespace TaskMaster.Network
 
                 while (runninng)
                 {
-                    TcpClient client;
-
-                    lock (_client)
-                        client = _client;
+                    TcpClient client = _client;
 
                     if (client != null && client.Connected)
                     {
                         try
                         {
-                            if (_stream.DataAvailable)
-                            {
-                                Packet packet = Packet.ReadFromStream(ID, _reader);
-                                Owner.Events.SendQueued(OwnerAsTCPServer.Actions, packet);
-                            }
-
-                            Thread.Sleep(SLEEP_INTERVAL);
+                            Packet packet = Packet.ReadFromStream(ID, _reader);
+                            Owner.Events.SendQueued(OwnerAsTCPServer.Actions, packet);
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            Log.Default.Exception(e);
                             Log.Default.Error("Encountered exception during ReceiveLoop on client {0}. Dropping client.", ID);
                             Stop();
                         }
@@ -144,9 +131,9 @@ namespace TaskMaster.Network
             {
                 try
                 {
-                    lock (_client)
+                    if (_client != null)
                     {
-                        if (_client != null)
+                        lock (_client)
                         {
                             _client.Close();
                             _client = null;
@@ -191,9 +178,7 @@ namespace TaskMaster.Network
             {
                 try
                 {
-                    TcpListener listener;
-                    lock (_listener)
-                        listener = _listener;
+                    TcpListener listener = _listener;
 
                     if (listener != null)
                     {
@@ -261,6 +246,8 @@ namespace TaskMaster.Network
                     RemoveClient(client.ID);
                 }
             } catch (Exception e) { Log.Default.Exception(e); }
+
+            _workers.Stop();
 
             State = ServerConnectionState.Disconnected;
         }

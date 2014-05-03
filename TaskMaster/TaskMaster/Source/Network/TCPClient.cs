@@ -71,7 +71,6 @@ namespace TaskMaster.Network
                         }
                         catch (Exception e)
                         {
-                            Log.Default.Exception(e);
                             Log.Default.Error("Encountered exception during SendLoop. Disconnecting.");
                             Disconnect();
                         }
@@ -104,15 +103,11 @@ namespace TaskMaster.Network
                     {
                         try
                         {
-                            if (stream.DataAvailable)
-                            {
-                                Packet packet = Packet.ReadFromStream(Guid.Empty, reader);
-                                Events.SendQueued(Actions, packet);
-                            }
+                            Packet packet = Packet.ReadFromStream(Guid.Empty, reader);
+                            Events.SendQueued(Actions, packet);
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            Log.Default.Exception(e);
                             Log.Default.Error("Encountered exception during ReceiveLoop. Disconnecting.");
                             Disconnect();
                         }
@@ -141,6 +136,8 @@ namespace TaskMaster.Network
             } catch (Exception e) { Log.Default.Exception(e); }
 
             _client = null;
+
+            _workers.Stop();
         }
 
         private void DoConnect()
