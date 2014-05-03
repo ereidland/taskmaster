@@ -52,7 +52,7 @@ namespace TaskMaster.Network
             {
                 bool runninng = true;
 
-                while (runninng)
+                while (runninng && _client != null)
                 {
                     TcpClient client;
 
@@ -64,7 +64,7 @@ namespace TaskMaster.Network
                         try
                         {
                             bool sending = true;
-                            while (sending)
+                            while (sending && client.Connected)
                             {
                                 Packet packet = null;
                                 lock (_pendingPacketsToSend)
