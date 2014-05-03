@@ -60,14 +60,15 @@ namespace TaskMaster
             }
         }
 
-        private List<Action> _pendingActions = new List<Action>();
+        private Queue<Action> _pendingActions = new Queue<Action>();
         private Thread _targetThread;
 
         public void AddAction(Action action)
         {
             if (action != null)
-                lock (_pendingActions) { _pendingActions.Add(action); }
+                lock (_pendingActions) { _pendingActions.Enqueue(action); }
         }
+
         public void AddAction(IPendingAction action)
         {
             if (action != null)
@@ -78,7 +79,7 @@ namespace TaskMaster
         {
             if (_targetThread == null || Thread.CurrentThread == _targetThread)
             {
-                lock(_pendingActions)
+                lock (_pendingActions)
                 {
                     try
                     {
@@ -99,6 +100,23 @@ namespace TaskMaster
             }
             else
                 Log.Default.Warning("Attempting to call ResolveActions on thread \"{0}\" and not the target thread, \"{1}\"", Thread.CurrentThread.Name, _targetThread.Name);
+        }
+        public void ResolveSingleAction()
+        {
+            if (_targetThread == null || Thread.CurrentThread == _targetThread)
+            {
+                Action pendingAction = null;
+                lock (_pendingActions)
+                {
+                    if (_pendingActions.Count > 0)
+                        pendingAction = _pendingActions.Dequeue();
+                }
+
+                if (pendingAction != null)
+                    pendingAction();
+            }
+            else
+                Log.Default.Warning("Attempting to call ResolveSingleAction on thread \"{0}\" and not the target thread, \"{1}\"", Thread.CurrentThread.Name, _targetThread.Name);
         }
 
         public ActionQueue() : this(Thread.CurrentThread) {}

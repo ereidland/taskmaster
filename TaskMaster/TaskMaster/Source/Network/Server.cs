@@ -24,6 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
 
 namespace TaskMaster.Network
 {
@@ -33,38 +34,102 @@ namespace TaskMaster.Network
         Listening,
     }
 
-    public class Server
+    public class ClientConnectedEvent
+    {
+        public Server Owner { get; private set; }
+        public Guid ClientID { get; private set; }
+
+        public ClientConnectedEvent(Server owner, Guid clientID)
+        {
+            Owner = owner;
+            ClientID = clientID;
+        }
+    }
+
+    public abstract class Server
     {
         public abstract class ServerClient
         {
-            public Guid ID { get; private set; }
-            public abstract void Send(byte[] data);
+            public Server Owner { get; private set; }
+            public Guid ID { get; protected set; }
+            public abstract NetworkError Send(string text, byte[] binary);
+            public abstract void Stop();
+
+            public ServerClient(Server owner, Guid id)
+            {
+                Owner = owner;
+                ID = id;
+            }
+
+            public ServerClient(Server owner) : this(owner, Guid.NewGuid()) {}
         }
 
-        private ActionQueue _actions = new ActionQueue();
+        private object _stateLock = new object();
+
+        private ActionQueue _actions = new ActionQueue(null);
         protected ActionQueue Actions { get { return _actions; } }
 
         public EventHub Events { get; private set; }
 
-        private ServerConnectionState _connectionState = ServerConnectionState.Disconnected;
+        private ServerConnectionState _connectionState = ServerConnectionState.Disconnected; 
 
         public ServerConnectionState State
         {
             get { return _connectionState; }
-            set
+            protected set
             {
-                if (_connectionState != value)
+                lock (_stateLock)
                 {
-                    var eventObject = new ObjectChangedEvent<ServerConnectionState>(_connectionState, value);
-                    _connectionState = value;
-                    Events.SendQueued(Actions, eventObject);
+                    if (_connectionState != value)
+                    {
+                        var eventObject = new ObjectChangedEvent<ServerConnectionState>(_connectionState, value);
+                        _connectionState = value;
+                        Events.SendQueued(Actions, eventObject);
+                    }
                 }
             }
         }
 
-        public short Port { get; protected set; }
+        public int Port { get; protected set; }
 
-        public abstract void Listen(int port);
+        private Dictionary<Guid, ServerClient> _clients = new Dictionary<Guid, ServerClient>();
+
+        public void ResolveEvents() { _actions.ResolveActions(); }
+
+        protected void AddClient(ServerClient client)
+        {
+            _clients[client.ID] = client;
+        }
+
+        protected void RemoveClient(Guid id) { _clients.Remove(id); }
+
+        protected ServerClient GetClient(Guid id)
+        {
+            ServerClient client;
+            _clients.TryGetValue(id, out client);
+            return client;
+        }
+
+        protected T GetClient<T>(Guid id) where T : ServerClient { return GetClient(id) as T; }
+
+        public List<ServerClient> GetClients() { return GetClients<ServerClient>(); }
+
+        public List<T> GetClients<T>() where T : ServerClient
+        {
+            List<T> clients = new List<T>();
+            foreach (var clientPair in _clients)
+            {
+                var client = clientPair.Value as T;
+                if (client != null)
+                    clients.Add(client);
+            }
+
+            return clients;
+        }
+
+        public abstract NetworkError Listen(int port);
+        public abstract NetworkError Send(Guid client, string text, byte[] binary);
+        public abstract void Stop();
 
         public Server(EventHub hub)
         {

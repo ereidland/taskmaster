@@ -25,14 +25,146 @@
 // THE SOFTWARE.
 
 using System;
+using System.Threading;
+using TaskMaster;
+using TaskMaster.Network;
 
 namespace TaskMasterConsole
 {
     class MainClass
     {
+        private static Client StartClient(EventHub hub)
+        {
+            Client client = new TCPClient(hub);
+            string address = "127.0.0.1";
+            int port = 32014;
+            Console.WriteLine(client.Connect(address, port));
+            new Thread((t) =>
+            {
+                while (true)
+                {
+                    client.ResolveEvents();
+                    Thread.Sleep(100);
+                }
+            }).Start();
+            return client;
+        }
+
+        private static Server StartServer(EventHub hub)
+        {
+            Server server = new TCPServer(hub);
+            int port = 32014;
+            Console.WriteLine(server.Listen(port));
+            new Thread((t) =>
+            {
+                while (true)
+                {
+                    server.ResolveEvents();
+                    Thread.Sleep(100);
+                }
+            }).Start();
+            return server;
+        }
+
         public static void Main(string[] args)
         {
-            Console.WriteLine("TODO: Code.");
+            //TEST for server/client. Replace with actual TaskMaster code.
+            Client client = null;
+            Server server = null;
+            
+            EventHub hub = new EventHub();
+
+            EventHubSubscriber subscriber = new EventHubSubscriber();
+
+            subscriber.AddReceiver<Packet>(hub, (p) =>
+            {
+                Console.WriteLine("{0}: {1}", p.Sender, p.Text);
+            });
+
+            subscriber.AddReceiver<ObjectChangedEvent<ConnectionState>>(hub, (e) =>
+            {
+                Console.WriteLine("{0} -> {1}", e.OldValue, e.NewValue);
+            });
+
+            subscriber.AddReceiver<ClientConnectedEvent>(hub, (e) =>
+            {
+                Console.WriteLine("New client: " + e.ClientID);
+                e.Owner.Send(e.ClientID, "Welcome!", null);
+            });
+
+            subscriber.AddReceiver<ObjectChangedEvent<ServerConnectionState>>(hub, (e) =>
+            {
+                Console.WriteLine("{0} -> {1}", e.OldValue, e.NewValue);
+            });
+
+            string str;
+            bool running = true;
+            while (running && !string.IsNullOrEmpty(str = Console.ReadLine()))
+            {
+                string toCompare = str.ToLower();
+                switch(toCompare)
+                {
+                    case "/client":
+                    {
+                        if (client == null)
+                            client = StartClient(hub);
+                        else
+                            Console.WriteLine("Client already started!");
+
+                        break;
+                    }
+                    case "/server":
+                    {
+                        if (server == null)
+                            server = StartServer(hub);
+                        else
+                            Console.WriteLine("Server already started!");
+
+                        break;
+                    }
+                    case "/disconnect":
+                    {
+                        running = false;
+                        Console.WriteLine("As you wish...");
+                        break;
+                    }
+                    default:
+                    {
+                        if (server != null)
+                        {
+                            var clients = server.GetClients();
+                            if (clients.Count > 0)
+                            {
+                                foreach (var serverClient in clients)
+                                    Console.WriteLine(">{0}: {1}", serverClient.ID, serverClient.Send(str, null));
+                            }
+                            else
+                                Console.WriteLine("No clients to send to!");
+                        }
+                        else if (client != null)
+                        {
+                            Console.WriteLine(client.Send(str, null));
+                        }
+                        else Console.WriteLine("Can't send anything if you're not connected!");
+                        break;
+                    }
+                }
+            }
+
+            Console.WriteLine("Closing...");
+
+            if (server != null)
+            {
+                server.Stop();
+                Console.WriteLine("Stopped server.");
+            }
+            else if (client != null)
+            {
+                client.Disconnect();
+                Console.WriteLine("Disconnected client.");
+            }
+
+            Console.WriteLine("Fin.");
         }
     }
 }

@@ -42,6 +42,7 @@
     <Compile Include="Source\Core\EventHub.cs" />
     <Compile Include="Source\Core\Log.cs" />
     <Compile Include="Source\Core\GenericEvents.cs" />
+    <Compile Include="Source\Core\WorkerThreadPool.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

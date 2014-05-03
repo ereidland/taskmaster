@@ -26,9 +26,11 @@
 
 namespace TaskMaster.Network
 {
-    public class Client
+    public abstract class Client
     {
-        private ActionQueue _actions = new ActionQueue();
+        private object _stateLock = new object();
+
+        private ActionQueue _actions = new ActionQueue(null);
         protected ActionQueue Actions { get { return _actions; } }
 
         public EventHub Events { get; private set; }
@@ -38,13 +40,16 @@ namespace TaskMaster.Network
         public ConnectionState State
         {
             get { return _connectionState; }
-            set
+            protected set
             {
-                if (_connectionState != value)
+                lock (_stateLock)
                 {
-                    var eventObject = new ObjectChangedEvent<ConnectionState>(_connectionState, value);
-                    _connectionState = value;
-                    Events.SendQueued(Actions, eventObject);
+                    if (_connectionState != value)
+                    {
+                        var eventObject = new ObjectChangedEvent<ConnectionState>(_connectionState, value);
+                        _connectionState = value;
+                        Events.SendQueued(Actions, eventObject);
+                    }
                 }
             }
         }
@@ -52,7 +57,13 @@ namespace TaskMaster.Network
         public bool IsConnected { get { return State == ConnectionState.Connected; } }
 
         public string Address { get; protected set; }
-        public short Port { get; protected set; }
+        public int Port { get; protected set; }
+
+        public void ResolveEvents() { Actions.ResolveActions(); }
+
+        public abstract NetworkError Send(string text, byte[] binary);
+        public abstract void Disconnect();
+        public abstract NetworkError Connect(string address, int port);
 
         public Client(EventHub hub)
         {
