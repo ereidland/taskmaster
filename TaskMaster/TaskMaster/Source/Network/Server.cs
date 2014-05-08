@@ -58,7 +58,18 @@ namespace TaskMaster.Network
         }
     }
 
-    public abstract class Server
+    public class KickClientRequest
+    {
+        public Guid ClientID { get; private set; }
+        public string Reason { get; private set; }
+        public KickClientRequest(Guid client, string reason)
+        {
+            ClientID = client;
+            Reason = reason;
+        }
+    }
+
+    public abstract class Server : INetworkInterface
     {
         public abstract class ServerClient
         {
@@ -148,11 +159,18 @@ namespace TaskMaster.Network
 
         public abstract NetworkError Listen(int port);
         public abstract NetworkError Send(Guid client, string text, byte[] binary);
+
+        public abstract void Kick(Guid client, string reason);
+
+        protected virtual void OnKickClientRequest(KickClientRequest r) { Kick(r.ClientID, r.Reason); }
+
         public abstract void Stop();
 
         public Server(EventHub hub)
         {
             Events = hub;
+
+            Events.AddReceiver<KickClientRequest>(OnKickClientRequest);
         }
     }
 }

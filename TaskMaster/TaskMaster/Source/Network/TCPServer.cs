@@ -227,6 +227,13 @@ namespace TaskMaster.Network
                 return NetworkError.NoSuchClient;
         }
 
+        public override void Kick (Guid id, string reason)
+        {
+            var client = GetClient<TCPServerClient>(id);
+            if (client != null)
+                client.Stop();
+        }
+
         public override void Stop()
         {
             try

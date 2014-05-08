@@ -56,6 +56,11 @@ namespace TaskMaster.Network
         public Client Client { get; private set; }
     }
 
+    public interface INetworkInterface
+    {
+        NetworkError Send(Guid sender, string text, byte[] binary);
+    }
+
     public class Packet
     {
         private static UTF8Encoding _encoding = new UTF8Encoding();

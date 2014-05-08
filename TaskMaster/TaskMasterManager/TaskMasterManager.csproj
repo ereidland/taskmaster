@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{56A7D497-7221-4B64-9DEA-DBA5CC8AED8E}</ProjectGuid>
+    <ProjectGuid>{57BF0A7D-77B5-42B5-BDE1-DAF496DE0C1F}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>TaskMaster</RootNamespace>
-    <AssemblyName>TaskMaster</AssemblyName>
+    <RootNamespace>TaskMasterManager</RootNamespace>
+    <AssemblyName>TaskMasterManager</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,32 +28,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Dependencies\SimpleJSON.cs" />
-    <Compile Include="Source\Network\TCPClient.cs" />
-    <Compile Include="Source\Network\TCPServer.cs" />
-    <Compile Include="Source\Network\Shared.cs" />
-    <Compile Include="Source\Network\Client.cs" />
-    <Compile Include="Source\Network\Server.cs" />
-    <Compile Include="Source\Core\ActionQueue.cs" />
-    <Compile Include="Source\Core\EventHub.cs" />
-    <Compile Include="Source\Core\Log.cs" />
-    <Compile Include="Source\Core\GenericEvents.cs" />
-    <Compile Include="Source\Core\WorkerThreadPool.cs" />
-    <Compile Include="Source\Network\JSONProtocol.cs" />
-    <Compile Include="Source\FileIO\FileList.cs" />
-    <Compile Include="Source\FileIO\FileListJSONHandler.cs" />
-    <Compile Include="Source\Core\HelperFunctions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <ProjectReference Include="..\TaskMaster\TaskMaster.csproj">
+      <Project>{56A7D497-7221-4B64-9DEA-DBA5CC8AED8E}</Project>
+      <Name>TaskMaster</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Source\" />
-    <Folder Include="Source\Network\" />
-    <Folder Include="Dependencies\" />
-    <Folder Include="Source\Core\" />
-    <Folder Include="Source\FileIO\" />
   </ItemGroup>
 </Project>

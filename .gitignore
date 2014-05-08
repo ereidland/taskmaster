@@ -1,4 +1,7 @@
 bin/
+obj/
+input/
+output/
 
 *.userprefs
 # Compiled Object files
@@ -6,6 +9,8 @@ bin/
 *.lo
 *.o
 *.obj
+*.mdb
+*.mdw
 
 # Compiled Dynamic libraries
 *.so

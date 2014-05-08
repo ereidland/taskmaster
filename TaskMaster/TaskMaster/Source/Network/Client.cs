@@ -26,7 +26,7 @@
 
 namespace TaskMaster.Network
 {
-    public abstract class Client
+    public abstract class Client : INetworkInterface
     {
         private object _stateLock = new object();
 
@@ -62,6 +62,9 @@ namespace TaskMaster.Network
         public void ResolveEvents() { Actions.ResolveActions(); }
 
         public abstract NetworkError Send(string text, byte[] binary);
+
+        public NetworkError Send(System.Guid sender, string text, byte[] binary) { return Send(text, binary); }
+
         public abstract void Disconnect();
         public abstract NetworkError Connect(string address, int port);
 

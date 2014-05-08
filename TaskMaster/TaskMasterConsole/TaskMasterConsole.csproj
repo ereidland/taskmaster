@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{D1F94AFE-7BAA-40BA-924C-8E04B7AC090E}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -37,6 +37,10 @@
     <ProjectReference Include="..\TaskMaster\TaskMaster.csproj">
       <Project>{56A7D497-7221-4B64-9DEA-DBA5CC8AED8E}</Project>
       <Name>TaskMaster</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TaskMasterManager\TaskMasterManager.csproj">
+      <Project>{57BF0A7D-77B5-42B5-BDE1-DAF496DE0C1F}</Project>
+      <Name>TaskMasterManager</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

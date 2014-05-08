@@ -69,7 +69,7 @@ namespace TaskMaster.Network
                                     packet.WriteToStream(writer);
                             }
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             Log.Default.Error("Encountered exception during SendLoop. Disconnecting.");
                             Disconnect();

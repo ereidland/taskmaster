@@ -53,6 +53,9 @@ namespace TaskMasterConsole
         private static Server StartServer(EventHub hub)
         {
             Server server = new TCPServer(hub);
+            FileListJSONHandler fileListJSONHandler = new FileListJSONHandler();
+            JSONProtocol protocol = new JSONProtocol("test.", server);
+            fileListJSONHandler.SetupAsHost(protocol, "input/");
             int port = 32014;
             Console.WriteLine(server.Listen(port));
             new Thread((t) =>
@@ -71,6 +74,9 @@ namespace TaskMasterConsole
             //TEST for server/client. Replace with actual TaskMaster code.
             Client client = null;
             Server server = null;
+
+            FileListJSONHandler fileListJSONHandler = new FileListJSONHandler();;
+            JSONProtocol protocol;
             
             EventHub hub = new EventHub();
 
@@ -84,6 +90,11 @@ namespace TaskMasterConsole
             subscriber.AddReceiver<ObjectChangedEvent<ConnectionState>>(hub, (e) =>
             {
                 Console.WriteLine("{0} -> {1}", e.OldValue, e.NewValue);
+                if (e.NewValue == ConnectionState.Connected)
+                {
+                    protocol = new JSONProtocol("test.", client);
+                    fileListJSONHandler.SetupAsClient(protocol, "output/");
+                }
             });
 
             subscriber.AddReceiver<ClientConnectedEvent>(hub, (e) =>

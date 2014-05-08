@@ -91,28 +91,37 @@ namespace TaskMaster
         private void AddSubscription(EventHubSubscription subscription)
         {
             if (subscription != null)
-                _subscriptions.Add(subscription);
+            {
+                lock (_subscriptions)
+                    _subscriptions.Add(subscription);
+            }
         }
 
         public void Unsubscribe(EventHub hub)
         {
-            _subscriptions.RemoveAll(subscription =>
-                                     {
-                if (subscription.Hub == hub)
+            lock (_subscriptions)
+            {
+                _subscriptions.RemoveAll(subscription =>
                 {
-                    subscription.Cancel();
-                    return true;
-                }
-                return false;
-            });
+                    if (subscription.Hub == hub)
+                    {
+                        subscription.Cancel();
+                        return true;
+                    }
+                    return false;
+                });
+            }
         }
 
         public void UnsubscribeAll()
         {
-            foreach (var subscription in _subscriptions)
-                subscription.Cancel();
+            lock (_subscriptions)
+            {
+                foreach (var subscription in _subscriptions)
+                    subscription.Cancel();
 
-            _subscriptions.Clear();
+                _subscriptions.Clear();
+            }
         }
 
         public void AddReceiver(EventHub hub, object key, EventCallbackHandler callback) { AddSubscription(hub.AddReceiver(key, callback)); }
@@ -128,23 +137,26 @@ namespace TaskMaster
         {
             if (callback != null && callback.TargetObject != null)
             {
-                List<EventCallbackHandler> handlerList;
-                if (_handlers.TryGetValue(key, out handlerList))
+                lock (_handlers)
                 {
-                    foreach (var handler in handlerList)
+                    List<EventCallbackHandler> handlerList;
+                    if (_handlers.TryGetValue(key, out handlerList))
                     {
-                        if (callback.TargetObject == handler.TargetObject)
-                            return null;
+                        foreach (var handler in handlerList)
+                        {
+                            if (callback.TargetObject == handler.TargetObject)
+                                return null;
+                        }
                     }
-                }
-                else
-                {
-                    handlerList = new List<EventCallbackHandler>();
-                    _handlers[key] = handlerList;
-                }
+                    else
+                    {
+                        handlerList = new List<EventCallbackHandler>();
+                        _handlers[key] = handlerList;
+                    }
 
-                handlerList.Add(callback);
-                return new EventHubSubscription(this, key, callback.TargetObject);
+                    handlerList.Add(callback);
+                    return new EventHubSubscription(this, key, callback.TargetObject);
+                }
             }
             return null;
         }
@@ -153,16 +165,19 @@ namespace TaskMaster
         {
             if (key != null)
             {
-                List<EventCallbackHandler> handlerList;
-                if (_handlers.TryGetValue(key, out handlerList))
+                lock (_handlers)
                 {
-                    handlerList.RemoveAll((handler) =>
+                    List<EventCallbackHandler> handlerList;
+                    if (_handlers.TryGetValue(key, out handlerList))
                     {
-                        return handler.TargetObject == targetObject;
-                    });
+                        handlerList.RemoveAll((handler) =>
+                        {
+                            return handler.TargetObject == targetObject;
+                        });
 
-                    if (handlerList.Count == 0)
-                        _handlers.Remove(key);
+                        if (handlerList.Count == 0)
+                            _handlers.Remove(key);
+                    }
                 }
             }
         }
@@ -179,12 +194,16 @@ namespace TaskMaster
             if (key != null)
             {
                 List<EventCallbackHandler> handlerList;
-                if (_handlers.TryGetValue(key, out handlerList))
+
+                lock (_handlers)
                 {
-                    foreach (var handler in handlerList)
+                    if (_handlers.TryGetValue(key, out handlerList))
                     {
-                        try { handler.Execute(eventObject); }
-                        catch (Exception e) { Log.Default.Exception(e); } //TODO: Engine independant exception logging. Maybe send off an exception event?
+                        foreach (var handler in handlerList)
+                        {
+                            try { handler.Execute(eventObject); }
+                            catch (Exception e) { Log.Default.Exception(e); } //TODO: Engine independant exception logging. Maybe send off an exception event?
+                        }
                     }
                 }
             }
