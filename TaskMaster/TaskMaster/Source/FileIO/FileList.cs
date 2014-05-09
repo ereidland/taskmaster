@@ -39,11 +39,17 @@ namespace TaskMaster
         {
             return path != null && !Path.IsPathRooted(path) && !path.Contains("~") && !path.Contains("..");
         }
+
         public static void CreatePathForFile(string filePath)
         {
-            int slashIndex = filePath.LastIndexOf('/');
-            if (slashIndex != -1)
-                Directory.CreateDirectory(filePath.Substring(0, slashIndex));
+            try
+            {
+                int slashIndex = filePath.LastIndexOf('/');
+                string directory = filePath;
+                if (slashIndex != -1 && slashIndex < filePath.Length)
+                    directory = directory.Substring(0, slashIndex);
+                Directory.CreateDirectory(directory);
+            } catch (Exception e) { Log.Default.Exception(e); }
         }
 
         private MD5 _md5 = MD5.Create();
@@ -137,6 +143,8 @@ namespace TaskMaster
                     }
                 }
             }
+            else
+                missing.AddRange(_filesByHash.Keys);
             return missing;
         }
 

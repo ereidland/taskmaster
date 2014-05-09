@@ -53,9 +53,13 @@ namespace TaskMasterConsole
         private static Server StartServer(EventHub hub)
         {
             Server server = new TCPServer(hub);
-            FileListJSONHandler fileListJSONHandler = new FileListJSONHandler();
+            FileListJSONHandler hostFileList = new FileListJSONHandler();
             JSONProtocol protocol = new JSONProtocol("test.", server);
-            fileListJSONHandler.SetupAsHost(protocol, "input/");
+            hostFileList.SetupAsHost(protocol, "input/");
+
+            FileListJSONHandler clientFileList = new FileListJSONHandler();
+            clientFileList.SetupAsClient(protocol, "job_output", false);
+
             int port = 32014;
             Console.WriteLine(server.Listen(port));
             new Thread((t) =>
@@ -71,12 +75,12 @@ namespace TaskMasterConsole
 
         public static void Main(string[] args)
         {
-            //TEST for server/client. Replace with actual TaskMaster code.
+            //TODO: Replace with actual TaskMaster code contained within TaskServer, TaskClient, and TaskPosterClient.
             Client client = null;
             Server server = null;
 
             FileListJSONHandler fileListJSONHandler = new FileListJSONHandler();;
-            JSONProtocol protocol;
+            JSONProtocol protocol = null;
             
             EventHub hub = new EventHub();
 
@@ -111,6 +115,17 @@ namespace TaskMasterConsole
             subscriber.AddReceiver<ObjectChangedEvent<ServerConnectionState>>(hub, (e) =>
             {
                 Console.WriteLine("{0} -> {1}", e.OldValue, e.NewValue);
+            });
+
+            subscriber.AddReceiver<FileListSyncedEvent>(hub, (e) =>
+            {
+                if (client != null)
+                {
+                    Console.WriteLine("File list synched!");
+                    FileListJSONHandler hostList = new FileListJSONHandler();
+                    hostList.SetupAsHost(protocol, "output/");
+                    hostList.SendEntireList(Guid.Empty);
+                }
             });
 
             string str;

@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using System.Collections.Generic;
 using TaskMaster.Network;
@@ -30,10 +31,20 @@ using TaskMaster.SimpleJSON;
 
 namespace TaskMaster
 {
+    public class FileListSyncedEvent
+    {
+        public FileList List { get; private set; }
+        public FileListJSONHandler Handler { get; private set; }
+        public FileListSyncedEvent(FileList list, FileListJSONHandler handler)
+        {
+            List = list; Handler = handler;
+        }
+    }
+
     public class FileListJSONHandler
     {
         private FileList _localList = new FileList();
-        private FileList _remoteList = new FileList();
+        private FileList _remoteList = null;
         private EventHubSubscriber _subscriber = new EventHubSubscriber();
 
         private JSONProtocol _protocol;
@@ -114,16 +125,25 @@ namespace TaskMaster
 
         private void OnRespondToFileList(JSONPacket packet)
         {
-            _remoteList.Clear();
+            if (_remoteList != null)
+                _remoteList.Clear();
+            else
+                _remoteList = new FileList();
+
             _remoteList.LoadFromJSON(packet.Node);
 
             _missingFiles = _localList.GetRequiredFiles(_remoteList);
-            foreach (var file in _missingFiles)
+            if (_missingFiles.Count > 0)
             {
-                var request = new JSONClass();
-                request["file"] = file;
-                Net.Send(packet.Sender, _protocol.CreateString(request, "request_file_from_list"), null);
+                foreach (var file in _missingFiles)
+                {
+                    var request = new JSONClass();
+                    request["file"] = file;
+                    Net.Send(packet.Sender, _protocol.CreateString(request, "request_file_from_list"), null);
+                }
             }
+            else
+                Events.Send(new FileListSyncedEvent(_localList, this));
         }
 
         private void OnRespondToFile(JSONPacket packet)
@@ -136,11 +156,33 @@ namespace TaskMaster
                 {
                     string file = fileNode.Value;
                     string hash = hashNode.Value;
+
                     if (!string.IsNullOrEmpty(file) && !string.IsNullOrEmpty(hash))
+                    {
+                        _missingFiles.Remove(file);
                         _localList.WriteFile(file, hash, packet.Binary);
+
+                        if (_missingFiles.Count == 0 && _remoteList != null)
+                            Events.Send(new FileListSyncedEvent(_localList, this));
+                    }
                 }
             }
             //TODO: Error logging.
+        }
+
+        public void SendEntireList(Guid target)
+        {
+            foreach (var file in _localList.GetRequiredFiles(null))
+            {
+                string hash = _localList.GetHash(file);
+                byte[] binary = _localList.ReadFile(file);
+
+                JSONClass response = new JSONClass();
+                response["file"] = file;
+                response["hash"] = hash;
+
+                Net.Send(target, _protocol.CreateString(response, "response_file_from_list"), binary);
+            }
         }
 
         public void SetupAsHost(JSONProtocol protocol, string dataFolder)
@@ -148,6 +190,8 @@ namespace TaskMaster
             if (!IsInitialized)
             {
                 IsInitialized = true;
+
+                FileList.CreatePathForFile(dataFolder);
 
                 _protocol = protocol;
                 Net = _protocol.Net;
@@ -162,11 +206,13 @@ namespace TaskMaster
                 Log.Default.Error("Can't call SetupAsHost: Already initialized!");
         }
 
-        public void SetupAsClient(JSONProtocol protocol, string dataFolder)
+        public void SetupAsClient(JSONProtocol protocol, string dataFolder, bool requestList = true)
         {
             if (!IsInitialized)
             {
                 IsInitialized = true;
+
+                FileList.CreatePathForFile(dataFolder);
                 
                 _protocol = protocol;
                 Net = _protocol.Net;
@@ -177,7 +223,8 @@ namespace TaskMaster
                 _protocol.AddHandler("response_file_list", OnRespondToFileList);
                 _protocol.AddHandler("response_file_from_list", OnRespondToFile);
 
-                Net.Send(Guid.Empty, _protocol.CreateString(new JSONClass(), "request_file_list"), null);
+                if (requestList)
+                    Net.Send(Guid.Empty, _protocol.CreateString(new JSONClass(), "request_file_list"), null);
             }
             else
                 Log.Default.Error("Can't call SetupAsClient: Already initialized!");
@@ -186,7 +233,8 @@ namespace TaskMaster
         public void Stop()
         {
             _localList.Clear();
-            _remoteList.Clear();
+            if (_remoteList != null)
+                _remoteList.Clear();
 
             IsInitialized = false;
             _isHost = false;
