@@ -1,5 +1,5 @@
-//
-// Log.cs
+﻿//
+// TaskClient.cs
 //
 // Author:
 //       Evan Reidland <er@evanreidland.com>
@@ -23,34 +23,45 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+using System;
 
-namespace TaskMaster
+using TaskMaster;
+using TaskMaster.Network;
+
+namespace TaskMaster.Manager
 {
-    public class Log
+    public class TaskClient
     {
-        public enum LogType
+        private bool _logEverything = true;
+
+        private Log _log = new Log();
+
+        public bool LogEverything
         {
-            Debug,
-            Info,
-            Warning,
-            Error,
-            Exception,
+            get { return _logEverything; }
+            set
+            {
+                if (_logEverything != value)
+                {
+                    _logEverything = value;
+                    _log = _logEverything ? new Log() : new EmptyLogger();
+                }
+            }
         }
 
-        private static Log _default = new Log();
-        public static Log Default { get { return _default; } }
+        public Client NetClient { get; private set; }
 
-        public virtual void Text(LogType logType, string format, params object[] args) { System.Console.WriteLine(string.Format("[{0}]: {1}", logType, string.Format(format, args))); }
+        private void Initialize()
+        {
+            var events = NetClient.Events;
+            events.AddReceiver<Conne
+        }
 
-        public void Debug(string format, params object[] args) { Text(LogType.Debug, format, args); }
-        public void Info(string format, params object[] args) { Text(LogType.Debug, format, args); }
-        public void Warning(string format, params object[] args) { Text(LogType.Warning, format, args); }
-        public void Error(string format, params object[] args) { Text(LogType.Error, format, args); }
-        public void Exception(System.Exception e) { Text(LogType.Exception, "{0}: {1} at {2}", e.GetType(), e.Message, e.StackTrace); }
-    }
-
-    public class EmptyLogger : Log
-    {
-        public override void Text (LogType logType, string format, params object[] args) {}
+        public TaskClient(Client netClient)
+        {
+            NetClient = netClient;
+            Initialize();
+        }
     }
 }
+

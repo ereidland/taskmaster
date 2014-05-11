@@ -1,5 +1,5 @@
-//
-// Log.cs
+﻿//
+// TaskServer.cs
 //
 // Author:
 //       Evan Reidland <er@evanreidland.com>
@@ -23,34 +23,19 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+using System;
 
-namespace TaskMaster
+using TaskMaster;
+using TaskMaster.Network;
+
+namespace TaskMaster.Manager
 {
-    public class Log
+    public class TaskServer
     {
-        public enum LogType
+        public TaskServer()
         {
-            Debug,
-            Info,
-            Warning,
-            Error,
-            Exception,
+
         }
-
-        private static Log _default = new Log();
-        public static Log Default { get { return _default; } }
-
-        public virtual void Text(LogType logType, string format, params object[] args) { System.Console.WriteLine(string.Format("[{0}]: {1}", logType, string.Format(format, args))); }
-
-        public void Debug(string format, params object[] args) { Text(LogType.Debug, format, args); }
-        public void Info(string format, params object[] args) { Text(LogType.Debug, format, args); }
-        public void Warning(string format, params object[] args) { Text(LogType.Warning, format, args); }
-        public void Error(string format, params object[] args) { Text(LogType.Error, format, args); }
-        public void Exception(System.Exception e) { Text(LogType.Exception, "{0}: {1} at {2}", e.GetType(), e.Message, e.StackTrace); }
-    }
-
-    public class EmptyLogger : Log
-    {
-        public override void Text (LogType logType, string format, params object[] args) {}
     }
 }
+

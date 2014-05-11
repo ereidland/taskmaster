@@ -32,7 +32,7 @@ using TaskMaster.SimpleJSON;
 
 namespace TaskMaster
 {
-    public class FileList
+    public class FileList : IReadWriteJSON
     {
         //Attempt to protect against potential requests that would get files on disk out of bounds.
         public static bool IsPathSafe(string path)

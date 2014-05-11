@@ -47,6 +47,7 @@
     <Compile Include="Source\FileIO\FileList.cs" />
     <Compile Include="Source\FileIO\FileListJSONHandler.cs" />
     <Compile Include="Source\Core\HelperFunctions.cs" />
+    <Compile Include="Source\Core\IReadWriteJSON.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
