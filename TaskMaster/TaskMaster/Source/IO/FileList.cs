@@ -30,7 +30,7 @@ using System.Security.Cryptography;
 using System.Text;
 using TaskMaster.SimpleJSON;
 
-namespace TaskMaster
+namespace TaskMaster.IO
 {
     public class FileList : IReadWriteJSON
     {

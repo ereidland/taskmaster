@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using TaskMaster.Network;
 using TaskMaster.SimpleJSON;
 
-namespace TaskMaster
+namespace TaskMaster.IO
 {
     public class FileListSyncedEvent
     {

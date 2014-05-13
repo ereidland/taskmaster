@@ -1,5 +1,5 @@
 ﻿//
-// TaskClient.cs
+// ITaskMasterPlugin.cs
 //
 // Author:
 //       Evan Reidland <er@evanreidland.com>
@@ -23,44 +23,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
-
-using TaskMaster;
-using TaskMaster.Network;
 
 namespace TaskMaster.Manager
 {
-    public class TaskClient
+    public interface ITaskMasterPlugin
     {
-//        private bool _logEverything = true;
-//
-//        private Log _log = new Log();
-//
-//        public bool LogEverything
-//        {
-//            get { return _logEverything; }
-//            set
-//            {
-//                if (_logEverything != value)
-//                {
-//                    _logEverything = value;
-//                    _log = _logEverything ? new Log() : new EmptyLogger();
-//                }
-//            }
-//        }
-
-        public Client NetClient { get; private set; }
-
-        private void Initialize()
-        {
-            //TODO: Code.
-        }
-
-        public TaskClient(Client netClient)
-        {
-            NetClient = netClient;
-            Initialize();
-        }
+        bool ExecuteTask(TaskMaster.SimpleJSON.JSONNode taskInfo);
     }
 }
 

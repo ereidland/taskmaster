@@ -44,10 +44,12 @@
     <Compile Include="Source\Core\GenericEvents.cs" />
     <Compile Include="Source\Core\WorkerThreadPool.cs" />
     <Compile Include="Source\Network\JSONProtocol.cs" />
-    <Compile Include="Source\FileIO\FileList.cs" />
-    <Compile Include="Source\FileIO\FileListJSONHandler.cs" />
     <Compile Include="Source\Core\HelperFunctions.cs" />
     <Compile Include="Source\Core\IReadWriteJSON.cs" />
+    <Compile Include="Source\Plugin\InstanceNameAttribute.cs" />
+    <Compile Include="Source\IO\FileList.cs" />
+    <Compile Include="Source\IO\FileListJSONHandler.cs" />
+    <Compile Include="Source\Plugin\InstanceManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -55,6 +57,7 @@
     <Folder Include="Source\Network\" />
     <Folder Include="Dependencies\" />
     <Folder Include="Source\Core\" />
-    <Folder Include="Source\FileIO\" />
+    <Folder Include="Source\Plugin\" />
+    <Folder Include="Source\IO\" />
   </ItemGroup>
 </Project>

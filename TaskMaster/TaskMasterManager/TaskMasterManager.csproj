@@ -35,6 +35,8 @@
     <Compile Include="Source\SharedTaskClasses.cs" />
     <Compile Include="Source\TaskClient.cs" />
     <Compile Include="Source\TaskRequesterClient.cs" />
+    <Compile Include="Source\ITaskMasterPlugin.cs" />
+    <Compile Include="Source\TaskPluginManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

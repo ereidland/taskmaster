@@ -1,5 +1,5 @@
 ﻿//
-// TaskClient.cs
+// InstanceNameAttribute.cs
 //
 // Author:
 //       Evan Reidland <er@evanreidland.com>
@@ -25,42 +25,23 @@
 // THE SOFTWARE.
 using System;
 
-using TaskMaster;
-using TaskMaster.Network;
-
-namespace TaskMaster.Manager
+namespace TaskMaster
 {
-    public class TaskClient
+    public class InstanceNameAttribute : Attribute
     {
-//        private bool _logEverything = true;
-//
-//        private Log _log = new Log();
-//
-//        public bool LogEverything
-//        {
-//            get { return _logEverything; }
-//            set
-//            {
-//                if (_logEverything != value)
-//                {
-//                    _logEverything = value;
-//                    _log = _logEverything ? new Log() : new EmptyLogger();
-//                }
-//            }
-//        }
-
-        public Client NetClient { get; private set; }
-
-        private void Initialize()
+        public static string GetName(Type type)
         {
-            //TODO: Code.
+            if (type != null)
+            {
+                foreach (var attribute in type.GetCustomAttributes(typeof(InstanceNameAttribute), true))
+                    return ((InstanceNameAttribute)attribute).Name;
+                return type.FullName;
+            }
+            return null;
         }
+        public string Name { get; private set; }
 
-        public TaskClient(Client netClient)
-        {
-            NetClient = netClient;
-            Initialize();
-        }
+        public InstanceNameAttribute(string name) { Name = name; }
     }
 }
 

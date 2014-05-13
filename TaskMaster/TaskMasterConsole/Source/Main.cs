@@ -27,6 +27,7 @@
 using System;
 using System.Threading;
 using TaskMaster;
+using TaskMaster.IO;
 using TaskMaster.Network;
 
 namespace TaskMasterConsole
